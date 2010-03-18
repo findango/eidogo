@@ -118,6 +118,17 @@ eidogo.Board.prototype = {
         }
         return region;
     },
+    getMarkersForRegion: function(t, l, w, h) {
+        var markers = [].setLength(w * h, 0);
+        var offset;
+        for (var y = t; y < t + h; y++) {
+            for (var x = l; x < l + w; x++) {
+                offset = (y - t) * w + (x - l);
+                markers[offset] = this.getMarker({x:x, y:y});
+            }
+        }
+        return markers;
+    },
     addMarker: function(pt, type) {
         this.markers[pt.y * this.boardSize + pt.x] = type;
     },

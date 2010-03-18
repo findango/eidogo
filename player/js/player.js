@@ -1184,6 +1184,7 @@ eidogo.Player.prototype = {
                 this.showRegion();
                 // show(this.dom.searchAlgo, "inline");
                 show(this.dom.searchButton, "inline");
+                show(this.dom.copyButton, "inline");
                 stopEvent(e);
             }
         } else {
@@ -1279,6 +1280,7 @@ eidogo.Player.prototype = {
             this.regionBegun = false;
             // show(this.dom.searchAlgo, "inline");
             show(this.dom.searchButton, "inline");
+            show(this.dom.copyButton, "inline");
         }
         return true;
     },
@@ -1401,7 +1403,68 @@ eidogo.Player.prototype = {
         
         this.searchRegion(o);
     },
+   
+    copyRegion: function(offset) {
+        var bounds = this.getRegionBounds();
+        var region = this.board.getRegion(bounds[0], bounds[1], bounds[2], bounds[3]);
+        //var markers = this.board.getMarkersForRegion(bounds[0], bounds[1], bounds[2], bounds[3]);
+        
+        var top = bounds[0];
+        var left = bounds[1];
+        var width = bounds[2];
+        var height = bounds[3];
+        var asciiBoard = "<pre>";
+        
+        // top border ?
+        if (top == 0) {
+            asciiBoard += this.renderTopBottomBorder(left, width);
+        }
+
+        // points
+        for (var y = 0; y < height; y++) {
+            if (left == 0)
+                asciiBoard += "|";
+
+            for (var x = 0; x < width; x++) {
+                var point = region[(y * width) + x];
+                if (point == this.board.BLACK) {
+                    point = " X";
+                } else if (point == this.board.WHITE) {
+                    point = " O";
+                } else {
+                    point = " .";
+                }
+                asciiBoard += point;
+            }
+            
+            if (left + width == this.board.boardSize)
+                asciiBoard += " |";
+            asciiBoard += "<br />";
+        }
+
+        // bottom border? 
+        if (top + height == this.board.boardSize) {
+            asciiBoard += this.renderTopBottomBorder(left, width);
+        }
+        asciiBoard +="</pre>";
+        this.showComments("");
+        this.prependComment(asciiBoard);
+    },
     
+    renderTopBottomBorder: function(left, width) {
+        var border = "";
+        for (var i = left; i < left + width; i++) {
+            if (i == 0)
+                border += " --";
+            else if (i == this.board.boardSize - 1)
+                border += "---";
+            else
+                border += "--";
+        }
+        border += "<br>";
+        return border;
+    }, 
+
     /**
      * Call out to our external handler to perform a pattern search. Also
      * prevent meaningless or overly-simple searches.
@@ -1787,6 +1850,7 @@ eidogo.Player.prototype = {
             this.hideRegion();
             hide(this.dom.searchButton);
             hide(this.dom.searchAlgo);
+            hide(this.dom.copyButton);
             if (this.searchUrl)
                 show(this.dom.scoreEst, "inline");
         }
@@ -2195,6 +2259,7 @@ eidogo.Player.prototype = {
                     <option value='center'>" + t['search center'] + "</option>\
                 </select>\
                 <input type='button' id='search-button' class='search-button' value='" + t['search'] + "' />\
+                <input type='button' id='copy-button' class='copy-button' value='" + t['copy'] + "' />\
                 <input type='text' id='label-input' class='label-input' />\
             </div>\
             <div id='comments' class='comments'></div>\
@@ -2281,6 +2346,7 @@ eidogo.Player.prototype = {
          ['controlForward',   'forward'],
          ['controlLast',      'last'],
          ['controlPass',      'pass'],
+         ['copyButton',       'copyRegion'],
          ['scoreEst',         'fetchScoreEstimate'],
          ['searchButton',     'searchRegion'],
          ['searchResults',    'loadSearchResult'],
